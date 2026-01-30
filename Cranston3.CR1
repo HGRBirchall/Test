@@ -1,0 +1,109 @@
+'Cranston 1
+
+'First drafted 18 Jann 2026
+'Flag(8) sets intitial offset of LVDT gauges and Load Cell
+'Flag(1) sets recording in Tables 1 and 2
+
+Dim n
+Dim m
+Dim p	        
+  			
+
+Public LVDT(11)   'Line 10
+Public LVDTBase(11)   
+Public Temp
+Public PanelT
+Public PanelBaseT
+Public Flag(10) As Boolean		'This activates 10 Flags not just flag 8, Get Table definitions from Setup     
+  							
+												'Line 20
+Units LVDT()=mm              
+Units LVDTBase()=mm
+Units PanelBaseT=deg C
+Units Temp=deg C 
+
+												     	 
+DataTable(Table1,True,-1)    	
+DataInterval(0,6,Hr,5)  ' Affects date/time record needs more testing     
+	Sample (1,LVDT(1),FP2)
+	Sample (1,LVDT(2),FP2
+	Sample (1,LVDT(3),FP2)
+	Sample (1,LVDT(4),FP2)
+	Sample (1,LVDT(5),FP2)
+	Sample (1,LVDT(6),FP2)
+	Sample (1,LVDT(7),FP2)
+	Sample (1,LVDT(8),FP2)
+	Sample (1,LVDT(9),FP2)
+	Sample (1,LVDT(10),FP2)
+	Sample (1,LVDT(11),FP2)
+	Sample (1,PanelT,FP2)
+	Sample (1,Temp,FP2)    ' Line 30 
+EndTable 
+
+DataTable(Table2,True,-1)    	
+DataInterval(0,6,Hr,5)  ' Affects date/time record needs more testing     
+	Sample (1,LVDTBase(1),FP2)
+	Sample (1,LVDTBase(2),FP2
+	Sample (1,LVDTBase(3),FP2)
+	Sample (1,LVDTBase(4),FP2)
+	Sample (1,LVDTBase(5),FP2)
+	Sample (1,LVDTBase(6),FP2)
+	Sample (1,LVDTBase(7),FP2)
+	Sample (1,LVDTBase(8),FP2)
+	Sample (1,LVDTBase(9),FP2)
+	Sample (1,LVDTBase(10),FP2)
+	Sample (1,LVDTBase(11),FP2)
+	Sample (1,PanelT,FP2)
+	Sample (1,Temp,FP2) 
+EndTable 
+
+Sub Basevalues
+		VoltSe(LVDTBase(1),1,mV2500,(1),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(2),1,mV2500,(2),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(3),1,mV2500,(3),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(4),1,mV2500,(4),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(5),1,mV2500,(5),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(6),1,mV2500,(6),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(7),1,mV2500,(7),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(8),1,mV2500,(8),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(9),1,mV2500,(9),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(10),1,mV2500,(10),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		VoltSe(LVDTBase(11),1,mV2500,(11),True ,0,_50Hz,0.002469,0) 'Measure base values of LVDT  
+		PanelTemp(PanelBaseT,_50Hz)                  
+		TCDiff(Temp,1,autorangeC,4,TypeK,PanelT,1,_50Hz,250,1,0)
+		
+	EndSub    
+				
+				     
+
+SequentialMode  
+				
+BeginProg
+	Scan (6,Hr,5,0)  
+'		SW12(1)
+'		Delay (1,2,min)
+		Flag(1)=-1
+    If flag(8)=-1 Then Call Basevalues 'Program initialisation set zeroes     
+		VoltSe(LVDT(1),1,mV2500,(1),True ,0,_50Hz,0.002469,-LVDTBase(1)) 'Measure current value of LVDT's
+		VoltSe(LVDT(2),1,mV2500,(2),True ,0,_50Hz,0.002469,-LVDTBase(2)) 'Measure current value of LVDT's	
+		VoltSe(LVDT(3),1,mV2500,(3),True ,0,_50Hz,0.002469,-LVDTBase(3)) 'Measure current value of LVDT's	
+		VoltSe(LVDT(4),1,mV2500,(4),True ,0,_50Hz,0.002469,-LVDTBase(4)) 'Measure current value of LVDT's	
+		VoltSe(LVDT(5),1,mV2500,(5),True ,0,_50Hz,0.002469,-LVDTBase(5)) 'Measure current value of LVDT's	
+		VoltSe(LVDT(6),1,mV2500,(6),True ,0,_50Hz,0.002469,-LVDTBase(6)) 'Measure current value of LVDT's
+		VoltSe(LVDT(7),1,mV2500,(7),True ,0,_50Hz,0.002469,-LVDTBase(7)) 'Measure current value of LVDT's
+		VoltSe(LVDT(8),1,mV2500,(8),True ,0,_50Hz,0.002469,-LVDTBase(8)) 'Measure current value of LVDT's	
+		VoltSe(LVDT(9),1,mV2500,(9),True ,0,_50Hz,0.002469,-LVDTBase(9)) 'Measure current value of LVDT's	
+		VoltSe(LVDT(10),1,mV2500,(10),True ,0,_50Hz,0.002469,-LVDTBase(10)) 'Measure current value of LVDT's
+		VoltSe(LVDT(11),1,mV2500,(11),True ,0,_50Hz,0.002469,-LVDTBase(11)) 'Measure current value of LVDT's
+		PanelTemp(PanelT,_50Hz)
+		TCDiff(Temp,1,autorangeC,8,TypeK,PanelT,1,_50Hz,250,1,0)	
+'		SW12(0)	
+		If Flag(8)=-1 Then CallTable Table2
+		Flag(8)=0
+		If Flag(1)=-1 Then CallTable Table1
+   NextScan    
+       
+EndProg   
+
+
+
