@@ -4,6 +4,11 @@
 'Flag(8) sets intitial offset of LVDT gauges and Load Cell
 'Flag(1) sets recording in Tables 1 and 2
 
+'EmailRelay() constants
+Const _Email_Subject = "Daily Data From Cranston3 Datalogger"
+Const _Email_To_Address = "user@example.com"
+Const _CR_LF = CHR(13) & CHR(10)
+
 Dim n
 Dim m
 Dim p	        
@@ -14,7 +19,12 @@ Public LVDTBase(11)
 Public Temp
 Public PanelT
 Public PanelBaseT
-Public Flag(10) As Boolean		'This activates 10 Flags not just flag 8, Get Table definitions from Setup     
+Public Flag(10) As Boolean		'This activates 10 Flags not just flag 8, Get Table definitions from Setup
+
+'EmailRelay() variables
+Public Email_message As String * 150
+Public Email_relay_server_response As String * 100
+Public Email_tx_success     
   							
 												'Line 20
 Units LVDT()=mm              
@@ -101,8 +111,30 @@ BeginProg
 		If Flag(8)=-1 Then CallTable Table2
 		Flag(8)=0
 		If Flag(1)=-1 Then CallTable Table1
+
+    Email_Message = "This is an automatic email message from the datalogger station " & Status.StationName & ". "
+    Email_Message = Email_message & "Daily data from Table1 are attached."
+
    NextScan    
-       
+
+    'Daily email at 9pm with day's data
+    'Placing EmailRelay in SlowSequence within a Do/Loop allows EmailRelay
+    'to execute whenever the datalogger is not busy with other tasks and
+    'prevents EmailRelay from holding up the main scan if a result is not
+    'returned immediately.
+
+    SlowSequence
+    
+  Do
+
+    'Send daily email at 9pm (21:00) with the day's data from Table1
+    'Using daily interval starting at 21:00 hours
+    'If the attachment is a table name or a field from a table, put table name
+    'or tablename.fieldname in quotes. These are constants, not variables.
+    Email_tx_success = EmailRelay(_Email_To_Address,_Email_Subject,Email_message,Email_relay_server_response,"Table1",0,1,Day,21)
+    
+  Loop
+
 EndProg   
 
 
