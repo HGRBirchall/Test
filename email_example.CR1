@@ -1,0 +1,112 @@
+'CR1000X Series Datalogger
+'The datalogger type listed on line 1 determines the default instruction set,
+'compiler, and help files used for a program that uses the .DLD or .CRB program
+'extension. These options can also be set using the Set Datalogger Type dialog box
+'(CRBasic Editor|Tools|Set Datalogger Type).
+
+'For programming tips, copy this address to your browser
+'search window:https://www.campbellsci.com/videos/datalogger-programming
+
+'To create a different opening program template, type in new
+'instructions and select Template | Save as Default Template
+
+'Date:
+'Program author:
+
+'Example 2 
+
+'The following example program demonstrates the difference between using a positive OR negative streaming interval.
+'The program also demonstrates how To stream a Data table, OR just one variable from a Data table.
+'With a streaming interval of -10, this program will send 10 min of Data even if some records have already been sent.
+'If there Is a lost connection that Is re-established, you will NOT get multiple attachments because you are only
+'asking For the last 10 minutes of records. With a streaming interval of plus 10, the program will send 10 min of 
+'only new records. If there Is a lost connection that is reestablished, you may get multiple attachments for 
+'records that were NOT sent previously. 
+
+'Main program variables 
+'EmailRelay() constants
+Const _Email_Subject_1 = "Table_One Data From Datalogger_1"
+Const _Email_Subject_2 = "Panel Temperature Data From Datalogger_1"
+Const _Email_To_Address = "SomeUser@cambellsci.com"
+Const _CR_LF = CHR(13) & CHR(10)
+
+Public Battery_voltage
+Public Panel_temperature
+Public Counter(2) As Long
+
+'EmailRelay() variables
+Public Email_message(2) As String * 150
+Public Email_relay_server_response(2) As String * 100
+Public Email_tx_success(2)
+
+'Data Tables
+DataTable (Table_One,True,-1)
+  Sample (1,Battery_voltage,FP2)
+  Sample (1,Panel_temperature,FP2)
+  Sample (1,Counter(1),Long)
+EndTable
+
+DataTable (Table_Two,True,-1)
+  Sample (1,Battery_voltage,FP2)
+  Sample (1,Panel_temperature,FP2)
+  Sample (1,Counter(2),Long)
+EndTable 
+
+BeginProg
+
+  Scan (1,Min,3,60)
+
+    Email_Message(1)= "This is an automatic email message from the datalogger station " & Status.StationName & ". "
+    Email_Message(1)= Email_message(1) & "Table_One data are attached."
+
+    Email_Message(2)= "This is an automatic email message from the datalogger station " & Status.StationName & ". "
+    Email_Message(2)= Email_message(2) & "Panel temperature data are attached."
+
+    Counter(1) = Counter() +1
+    Counter(2) = Counter(2) +2
+ 
+    Battery (Battery_voltage)
+    
+    PanelTemp (Panel_temperature,50)
+ 
+    CallTable Table_One
+    CallTable Table_Two
+    
+ NextScan
+
+    'Interval testing of email streaming
+    'Placing EmailRelay In SlowSequence within a Do/Loop allows EmailRelay
+    'to execute whenever the datalogger is not busy with other tasks and
+    'prevents EmailRelay from holding up the main scan if a result is not
+    'returned immediately.
+
+    SlowSequence
+    
+  Do
+
+    'If the attachment is a table name or a field from a table, put table name
+    'or tablename.fieldname in quotes. These are constants, not variables.
+
+    '-10 interval = send most recent 10 min of records from Table_One, even if
+    'some have already been sent. If connection is lost, then multiple attachments
+    'will not be sent upon recovery of connection because we are only asking
+    'for 10 min interval of most recent records; not all records.
+    'Note that the server response will be -2: Not enough data stored,
+    'until the streaming interval is true.
+    Email_tx_success(1) = EmailRelay(_EMAIL_TO_ADDRESS,_EMAIL_SUBJECT_1,Email_message(1),Email_relay_server_response(1),"Table_One",0,-10,min,8)
+
+    'Positive 10 interval = send last 10 min of unsent data; only previously
+    'unsent records will be sent. If connection is lost, multiple attachments
+    'of previously unsent records my be sent on reconnection.
+    'Send only panel temperature from Table_Two; not the entire table.
+    'Note that the server response will be -2:Not enough data stored, until
+    'the streaming interval is true.
+    Email_tx_success(2) = EmailRelay(_Email_To_Address,_Email_Subject_2,Email_message(2),Email_relay_server_response(2),"Table_Two.Panel_Temperature",0,10,min,8)
+    
+  Loop
+
+EndProg
+
+
+
+
